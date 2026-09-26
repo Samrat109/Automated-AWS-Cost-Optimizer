@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Stops EC2 instances tagged with AutoStop=true to reduce cloud costs.
+
+Resources:
+  EC2CostOptimizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: EC2CostOptimizer
+      Runtime: python3.12
+      Handler: lambda_function.lambda_handler
+      CodeUri: .
+      Description: Stops running EC2 instances that are tagged for auto-stop.
+      MemorySize: 128
+      Timeout: 60
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ec2:DescribeInstances
+                - ec2:StopInstances
+              Resource: '*'
+      Events:
+        DailySchedule:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 18 ? * MON-FRI *)
+            Enabled: true
